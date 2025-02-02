@@ -1,0 +1,48 @@
+{
+  "id": "microsoft-ag",
+  "name": "Microsoft AG",
+  "website": "https://www.microsoft.de",
+  "legal_name": "Microsoft Inc",
+  "industry": "Computer Software",
+  "company_type": "",
+  "founded_year": "",
+  "employee_count": "",
+  "revenue_range": "",
+  "description": "",
+  "city": "",
+  "country": "",
+  "street_address": "",
+  "postal_code": "",
+  "phone": "",
+  "email": "",
+  "linkedin_url": "",
+  "twitter_url": "",
+  "facebook_url": "",
+  "technologies": [],
+  "ai_focus_areas": [],
+  "products": [],
+  "services": [],
+  "created_at": "2025-01-31T23:31:16.115Z",
+  "last_updated": "2025-02-02T20:26:48.864Z",
+  "domain": "microsoft.de",
+  "logo_url": "https://logo.clearbit.com/microsoft.de",
+  "file_path": "src/data/companies/microsoft-ag.json",
+  "Unternehmensinformationen": {
+    "Branche": "Software & AI",
+    "Unternehmenstyp": "Technology Company",
+    "Rechtlicher Name": "Microsoft AG GmbH"
+  },
+  "ai_enrichment": {
+    "last_updated": "2025-02-02T19:54:54.432Z",
+    "confidence": 85,
+    "enriched_fields": [
+      "Unternehmensinformationen"
+    ]
+  },
+  "tags": [
+    "Software",
+    "AI",
+    "Cloud"
+  ],
+  "url": "https://www.micosoft.com"
+}
