@@ -7,51 +7,12 @@ import { toast } from 'react-hot-toast';
 
 const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23CBD5E0' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
 
-// Add this new component
-const TrustScore = ({ score }) => {
-  const getColorClass = (score) => {
-    if (score >= 80) return 'bg-emerald-500';
-    if (score >= 50) return 'bg-amber-500';
-    return 'bg-red-500';
-  };
-
-  const getTextColorClass = (score) => {
-    if (score >= 80) return 'text-emerald-500';
-    if (score >= 50) return 'text-amber-500';
-    return 'text-red-500';
-  };
-
-  return (
-    <div className="absolute top-2 left-2 bg-white rounded-lg shadow-md p-3 z-50">
-      <div className="flex items-center gap-2 mb-2">
-        <i className={`fas fa-shield-alt ${getTextColorClass(score)}`}></i>
-        <span className="font-semibold">Vertrauenswürdigkeit</span>
-      </div>
-      <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div 
-          className={`h-full transition-all duration-500 ${getColorClass(score)}`}
-          style={{ width: `${score}%` }}
-        ></div>
-      </div>
-      <div className="mt-1 text-sm text-gray-600 flex justify-between">
-        <span>{score}%</span>
-        <button 
-          className="text-blue-600 hover:underline"
-          onClick={() => alert('Vertrauenswürdigkeit basiert auf:\n- Verifizierte Quellen\n- Offizielle Links\n- Firmenprofil\n- Vollständigkeit der Daten\n- Aktualität der Informationen')}
-        >
-          <i className="fas fa-info-circle"></i>
-        </button>
-      </div>
-    </div>
-  );
-};
-
 const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showCompanyDetails, setShowCompanyDetails] = useState(false);
   const [editedExpert, setEditedExpert] = useState(expert);
-  const [isEnriching, setIsEnriching] = useState(false);
   const [showResearchAgent, setShowResearchAgent] = useState(false);
+  const [activeTab, setActiveTab] = useState('info');
 
   // Add debug logging
   useEffect(() => {
@@ -155,15 +116,20 @@ const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
 
   const handleSave = async () => {
     try {
-      // Preserve AI enrichment data
+      // Create updated expert object with proper image structure
       const updatedExpert = {
         ...editedExpert,
-        ai_enrichment: expert.ai_enrichment, // Keep the original AI enrichment data
         personalInfo: {
           ...editedExpert.personalInfo,
-          imageUrl: editedExpert.personalInfo?.imageUrl // Ensure imageUrl is preserved
+          image: editedExpert.personalInfo?.image || editedExpert.personalInfo?.imageUrl || editedExpert.imageUrl
         }
       };
+
+      // Clean up any duplicate image fields
+      delete updatedExpert.imageUrl;
+      if (updatedExpert.personalInfo) {
+        delete updatedExpert.personalInfo.imageUrl;
+      }
 
       await onUpdate(updatedExpert);
       setIsEditing(false);
@@ -216,98 +182,6 @@ const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
     setShowResearchAgent(true);
   };
 
-  const renderAIEnrichment = () => {
-    return (
-      <div className="mt-6">
-        <section className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-3">
-            <i className="fas fa-robot text-blue-500 mr-2"></i>
-            KI-Anreicherung
-          </h3>
-          <div className="space-y-4">
-            {/* Confidence Score */}
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Konfidenz Score:</span>
-              <div className="flex items-center gap-2">
-                <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full ${
-                      expert.ai_enrichment?.confidence >= 80 ? 'bg-emerald-500' :
-                      expert.ai_enrichment?.confidence >= 50 ? 'bg-amber-500' :
-                      'bg-red-500'
-                    }`}
-                    style={{ width: `${expert.ai_enrichment?.confidence || 0}%` }}
-                  ></div>
-                </div>
-                <span className="text-sm font-medium">
-                  {expert.ai_enrichment?.confidence || 0}%
-                </span>
-              </div>
-            </div>
-
-            {/* Last Enrichment */}
-            <div className="text-sm text-gray-600">
-              <span className="font-medium">Letzte Anreicherung:</span>
-              <span className="ml-2">
-                {expert.ai_enrichment?.last_updated || 'Noch nicht angereichert'}
-              </span>
-            </div>
-
-            {/* Enriched Fields */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-600 mb-2">
-                Angereicherte Felder:
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {expert.ai_enrichment?.enriched_fields?.map((field, index) => (
-                  <span 
-                    key={index}
-                    className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
-                  >
-                    {field}
-                  </span>
-                )) || (
-                  <span className="text-gray-500 text-sm">
-                    Keine Felder angereichert
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Sources Used */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-600 mb-2">
-                Verwendete Quellen:
-              </h4>
-              <div className="space-y-1">
-                {expert.ai_enrichment?.sources?.map((source, index) => (
-                  <div key={index} className="flex items-center gap-2 text-sm">
-                    <i className="fas fa-link text-gray-400"></i>
-                    <a 
-                      href={source.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {source.name || source.url}
-                    </a>
-                    <span className="text-gray-500 text-xs">
-                      ({source.type})
-                    </span>
-                  </div>
-                )) || (
-                  <span className="text-gray-500 text-sm">
-                    Keine Quellen verwendet
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    );
-  };
-
   // Add this helper function to render editable fields
   const renderEditableField = (label, value, fieldName, type = "text") => {
     return (
@@ -341,14 +215,76 @@ const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
     return [];
   };
 
+  // Helper functions to get data
+  const getName = () => {
+    return expert.personalInfo?.fullName || 
+           expert.name || 
+           `${expert.personalInfo?.firstName || ''} ${expert.personalInfo?.lastName || ''}`.trim() ||
+           'Unnamed Expert';
+  };
+
+  const getTitle = () => {
+    return expert.currentRole?.title || 
+           expert.institution?.position || 
+           expert.titel || 
+           'Keine Position angegeben';
+  };
+
+  const getOrganization = () => {
+    return expert.currentRole?.organization || 
+           expert.institution?.name || 
+           expert.organisation || 
+           '';
+  };
+
+  const getExpertise = () => {
+    const expertise = [];
+    // Add tags first
+    if (expert.tags?.length) expertise.push(...expert.tags);
+    // Add primary expertise
+    if (expert.expertise?.primary?.length) expertise.push(...expert.expertise.primary);
+    // Add secondary expertise
+    if (expert.expertise?.secondary?.length) expertise.push(...expert.expertise.secondary);
+    // Add focus area
+    if (expert.currentRole?.focus) expertise.push(expert.currentRole.focus);
+    // Add industries
+    if (expert.expertise?.industries?.length) expertise.push(...expert.expertise.industries);
+    
+    return [...new Set(expertise)]; // Remove duplicates
+  };
+
+  const getSocialLinks = () => {
+    return {
+      linkedin: expert.profiles?.linkedin || expert.social_media?.linkedin || '',
+      twitter: expert.profiles?.twitter || expert.social_media?.twitter || '',
+      website: expert.profiles?.company || expert.institution?.website || expert.website || ''
+    };
+  };
+
+  const getContact = () => {
+    return {
+      email: expert.personalInfo?.email || expert.contact?.email || '',
+      phone: expert.personalInfo?.phone || expert.contact?.phone || ''
+    };
+  };
+
+  const getLanguages = () => {
+    return expert.personalInfo?.languages || expert.languages || [];
+  };
+
+  // Add new helper for academic metrics
+  const getAcademicMetrics = () => {
+    return {
+      publications: expert.academicMetrics?.publications?.total || 0,
+      citations: expert.academicMetrics?.citations?.total || 0,
+      hIndex: expert.academicMetrics?.hIndex || 0,
+      sources: expert.academicMetrics?.publications?.sources || {}
+    };
+  };
+
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
-        {/* Trust Score */}
-        {expert.trust_score && (
-          <TrustScore score={expert.trust_score.score} />
-        )}
-
         {/* Header with Edit and Close buttons */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
@@ -367,19 +303,9 @@ const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
                 <button
                   onClick={handleEnrichment}
                   className="px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors flex items-center"
-                  disabled={isEnriching}
                 >
-                  {isEnriching ? (
-                    <>
-                      <i className="fas fa-spinner fa-spin mr-2"></i>
-                      Lädt...
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-magic mr-2"></i>
-                      KI-Anreicherung
-                    </>
-                  )}
+                  <i className="fas fa-magic mr-2"></i>
+                  KI-Anreicherung
                 </button>
               </>
             ) : (
@@ -428,16 +354,16 @@ const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-              {expert.personalInfo?.fullName || expert.name}
+              {getName()}
             </h2>
-            <p className="text-lg text-gray-600">{expert.position || 'Position nicht angegeben'}</p>
-            {expert.company && (
+            <p className="text-lg text-gray-600">{getTitle()}</p>
+            {getOrganization() && (
               <button 
                 onClick={() => setShowCompanyDetails(true)}
                 className="flex items-center gap-2 text-gray-500 mt-1 hover:text-blue-600 transition-colors"
               >
                 <i className="fas fa-building"></i>
-                <span className="hover:underline">{expert.company.name}</span>
+                <span className="hover:underline">{getOrganization()}</span>
                 <i className="fas fa-external-link-alt text-sm"></i>
               </button>
             )}
@@ -452,22 +378,15 @@ const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
             </label>
             <input
               type="url"
-              value={editedExpert.personalInfo?.imageUrl || editedExpert.imageUrl || ''}
+              value={editedExpert.personalInfo?.image || ''}
               onChange={(e) => {
-                if (editedExpert.id === "exp_buyx") {
-                  setEditedExpert({
-                    ...editedExpert,
-                    personalInfo: {
-                      ...editedExpert.personalInfo,
-                      imageUrl: e.target.value
-                    }
-                  });
-                } else {
-                  setEditedExpert({
-                    ...editedExpert,
-                    imageUrl: e.target.value
-                  });
-                }
+                setEditedExpert({
+                  ...editedExpert,
+                  personalInfo: {
+                    ...editedExpert.personalInfo,
+                    image: e.target.value
+                  }
+                });
               }}
               className="w-full p-2 border rounded-lg"
               placeholder="https://example.com/expert-image.jpg"
@@ -475,176 +394,258 @@ const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
           </div>
         )}
 
-        {/* Content Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="space-y-6">
-            {/* Personal Information */}
-            <section className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3">
-                <i className="fas fa-user text-blue-500 mr-2"></i>
-                Persönliche Informationen
-              </h3>
-              <div className="grid grid-cols-[120px,1fr] gap-2">
-                {renderEditableField('Name', expert.personalInfo?.fullName || expert.name, 'name')}
-                {renderEditableField('Titel', expert.personalInfo?.title || expert.title, 'title')}
-                {renderEditableField('Position', expert.position, 'position')}
-                {renderEditableField('Email', expert.email, 'email', 'email')}
-                {renderEditableField('Telefon', expert.phone, 'phone', 'tel')}
-              </div>
-            </section>
-
-            {/* Organization Information */}
-            <section className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3">
-                <i className="fas fa-building text-blue-500 mr-2"></i>
-                Organisation
-              </h3>
-              <div className="grid grid-cols-[120px,1fr] gap-2">
-                {renderEditableField('Institution', expert.institution, 'institution')}
-                {renderEditableField('Abteilung', expert.department, 'department')}
-                {renderEditableField('Gründung', expert.founded, 'founded')}
-                {renderEditableField('Mitarbeiter', expert.employee_count, 'employee_count')}
-                {renderEditableField('Finanzierung', expert.funding, 'funding')}
-              </div>
-            </section>
-
-            {/* Location Information */}
-            <section className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3">
-                <i className="fas fa-map-marker-alt text-blue-500 mr-2"></i>
-                Standort
-              </h3>
-              <div className="grid grid-cols-[120px,1fr] gap-2">
-                {renderEditableField('Adresse', expert.address, 'address')}
-                {renderEditableField('Stadt', expert.city, 'city')}
-                {renderEditableField('Bundesland', expert.state, 'state')}
-                {renderEditableField('Land', expert.country, 'country')}
-                {renderEditableField('PLZ', expert.postal_code, 'postal_code')}
-              </div>
-            </section>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Online Presence */}
-            <section className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3">
-                <i className="fas fa-globe text-blue-500 mr-2"></i>
-                Online Präsenz
-              </h3>
-              <div className="grid grid-cols-[120px,1fr] gap-2">
-                {isEditing ? (
-                  <>
-                    <span className="text-gray-500">Website:</span>
-                    <input
-                      type="url"
-                      value={editedExpert.url || ''}
-                      onChange={(e) => setEditedExpert({
-                        ...editedExpert,
-                        url: e.target.value
-                      })}
-                      className="border rounded px-2 py-1 w-full"
-                    />
-                  </>
-                ) : (
-                  <>
-                    <span className="text-gray-500">Website:</span>
-                    <span className="break-all">
-                      {expert.url ? (
-                        <a 
-                          href={expert.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {expert.url}
-                        </a>
-                      ) : (
-                        'Keine Website angegeben'
-                      )}
-                    </span>
-                  </>
-                )}
-                {renderEditableField('LinkedIn', expert.linkedin_url, 'linkedin_url', 'url')}
-                {renderEditableField('Twitter', expert.twitter_url, 'twitter_url', 'url')}
-                {renderEditableField('Facebook', expert.facebook_url, 'facebook_url', 'url')}
-              </div>
-            </section>
-
-            {/* Expertise - Special handling for arrays */}
-            <section className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3">
-                <i className="fas fa-brain text-blue-500 mr-2"></i>
-                Expertise
-              </h3>
-              {isEditing ? (
-                <div className="space-y-2">
-                  {getExpertiseArray(editedExpert).map((item, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={item}
-                        onChange={(e) => {
-                          const newExpertise = [...getExpertiseArray(editedExpert)];
-                          newExpertise[index] = e.target.value;
-                          setEditedExpert({
-                            ...editedExpert,
-                            expertise: Array.isArray(editedExpert.expertise) 
-                              ? newExpertise 
-                              : { 
-                                  ...editedExpert.expertise,
-                                  primary: newExpertise 
-                                }
-                          });
-                        }}
-                        className="border rounded px-2 py-1 flex-1"
-                      />
-                      <button
-                        onClick={() => {
-                          const newExpertise = getExpertiseArray(editedExpert)
-                            .filter((_, i) => i !== index);
-                          setEditedExpert({
-                            ...editedExpert,
-                            expertise: Array.isArray(editedExpert.expertise)
-                              ? newExpertise
-                              : {
-                                  ...editedExpert.expertise,
-                                  primary: newExpertise
-                                }
-                          });
-                        }}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <i className="fas fa-times"></i>
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => {
-                      const currentExpertise = getExpertiseArray(editedExpert);
-                      setEditedExpert({
-                        ...editedExpert,
-                        expertise: Array.isArray(editedExpert.expertise)
-                          ? [...currentExpertise, '']
-                          : {
-                              ...editedExpert.expertise,
-                              primary: [...currentExpertise, '']
-                            }
-                      });
-                    }}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    <i className="fas fa-plus mr-1"></i>
-                    Expertise hinzufügen
-                  </button>
-                </div>
-              ) : (
-                renderExpertiseWithSources()
-              )}
-            </section>
-          </div>
+        {/* Tabs */}
+        <div className="flex border-b mb-6">
+          <button
+            className={`px-4 py-2 ${activeTab === 'info' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600'}`}
+            onClick={() => setActiveTab('info')}
+          >
+            Information
+          </button>
+          <button
+            className={`px-4 py-2 ${activeTab === 'expertise' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600'}`}
+            onClick={() => setActiveTab('expertise')}
+          >
+            Expertise
+          </button>
+          <button
+            className={`px-4 py-2 ${activeTab === 'contact' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600'}`}
+            onClick={() => setActiveTab('contact')}
+          >
+            Kontakt
+          </button>
         </div>
+
+        {/* Content */}
+        {activeTab === 'info' && (
+          <div className="space-y-6">
+            {/* Basic Info */}
+            <section>
+              <h3 className="font-semibold mb-2">Über</h3>
+              <p className="text-gray-600">
+                {expert.description || expert.bio || 'Keine Beschreibung verfügbar'}
+              </p>
+            </section>
+
+            {/* Institution Info */}
+            {expert.institution && (
+              <section>
+                <h3 className="font-semibold mb-2">Institution</h3>
+                <div className="text-gray-600">
+                  <p><strong>Name:</strong> {expert.institution.name}</p>
+                  <p><strong>Position:</strong> {expert.institution.position}</p>
+                  {expert.institution.department && (
+                    <p><strong>Abteilung:</strong> {expert.institution.department}</p>
+                  )}
+                  {expert.institution.website && expert.institution.website !== "Nicht verfügbar" && (
+                    <p>
+                      <strong>Website:</strong>{' '}
+                      <a href={expert.institution.website} target="_blank" rel="noopener noreferrer" 
+                         className="text-blue-600 hover:underline">
+                        {expert.institution.website}
+                      </a>
+                    </p>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Current Role */}
+            {expert.currentRole && (
+              <section>
+                <h3 className="font-semibold mb-2">Aktuelle Position</h3>
+                <div className="text-gray-600">
+                  <p><strong>Titel:</strong> {expert.currentRole.title}</p>
+                  <p><strong>Organisation:</strong> {expert.currentRole.organization}</p>
+                  {expert.currentRole.focus && (
+                    <p><strong>Fokus:</strong> {expert.currentRole.focus}</p>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Expertise Section */}
+            <section>
+              <h3 className="font-semibold mb-2">Expertise</h3>
+              <div className="space-y-3">
+                {expert.expertise?.primary?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700">Primäre Expertise</h4>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {expert.expertise.primary.map((item, index) => (
+                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {expert.expertise?.secondary?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700">Sekundäre Expertise</h4>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {expert.expertise.secondary.map((item, index) => (
+                        <span key={index} className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {expert.expertise?.industries?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700">Branchen</h4>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {expert.expertise.industries.map((item, index) => (
+                        <span key={index} className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Academic Metrics */}
+            {expert.academicMetrics && (
+              <section>
+                <h3 className="font-semibold mb-2">Akademische Metriken</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {expert.academicMetrics.publications?.total !== null && (
+                    <div>
+                      <p className="text-sm text-gray-500">Publikationen</p>
+                      <p className="text-lg font-semibold">{expert.academicMetrics.publications.total || '0'}</p>
+                    </div>
+                  )}
+                  {expert.academicMetrics.hIndex !== null && (
+                    <div>
+                      <p className="text-sm text-gray-500">H-Index</p>
+                      <p className="text-lg font-semibold">{expert.academicMetrics.hIndex || '0'}</p>
+                    </div>
+                  )}
+                </div>
+                {expert.academicMetrics.publications?.sources && (
+                  <div className="mt-2 text-sm text-gray-500">
+                    <p>Quellen: {Object.keys(expert.academicMetrics.publications.sources).join(', ')}</p>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Languages */}
+            <section>
+              <h3 className="font-semibold mb-2">Sprachen</h3>
+              <div className="flex flex-wrap gap-2">
+                {getLanguages().length > 0 ? getLanguages().map((lang, index) => (
+                  <span key={index} className="px-2 py-1 bg-gray-100 rounded text-sm">
+                    {lang}
+                  </span>
+                )) : (
+                  <span className="text-gray-500 italic">Keine Sprachen angegeben</span>
+                )}
+              </div>
+            </section>
+
+            {/* Source */}
+            {expert.source && (
+              <section>
+                <h3 className="font-semibold mb-2">Quelle</h3>
+                <p className="text-gray-600">{expert.source}</p>
+              </section>
+            )}
+
+            {/* Last Enriched */}
+            {expert.lastEnriched && (
+              <section>
+                <h3 className="font-semibold mb-2">Letzte Aktualisierung</h3>
+                <p className="text-gray-600">
+                  {new Date(expert.lastEnriched).toLocaleDateString('de-DE', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+              </section>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'expertise' && (
+          <div className="space-y-6">
+            {/* Expertise */}
+            <section>
+              <h3 className="font-semibold mb-2">Fachgebiete</h3>
+              <div className="flex flex-wrap gap-2">
+                {getExpertise().length > 0 ? getExpertise().map((item, index) => (
+                  <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                    {item}
+                  </span>
+                )) : (
+                  <span className="text-gray-500 italic">Keine Expertise angegeben</span>
+                )}
+              </div>
+            </section>
+          </div>
+        )}
+
+        {activeTab === 'contact' && (
+          <div className="space-y-6">
+            {/* Contact Info */}
+            <section>
+              <h3 className="font-semibold mb-2">Kontaktdaten</h3>
+              <div className="space-y-2">
+                {getContact().email && (
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-envelope text-gray-400"></i>
+                    <a href={`mailto:${getContact().email}`} className="text-blue-600 hover:underline">
+                      {getContact().email}
+                    </a>
+                  </div>
+                )}
+                {getContact().phone && (
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-phone text-gray-400"></i>
+                    <a href={`tel:${getContact().phone}`} className="text-blue-600 hover:underline">
+                      {getContact().phone}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Social Links */}
+            <section>
+              <h3 className="font-semibold mb-2">Social Media & Web</h3>
+                <div className="space-y-2">
+                {getSocialLinks().linkedin && (
+                  <div className="flex items-center gap-2">
+                    <i className="fab fa-linkedin text-gray-400"></i>
+                    <a href={getSocialLinks().linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      LinkedIn Profil
+                    </a>
+                  </div>
+                )}
+                {getSocialLinks().twitter && (
+                  <div className="flex items-center gap-2">
+                    <i className="fab fa-twitter text-gray-400"></i>
+                    <a href={getSocialLinks().twitter} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      Twitter Profil
+                    </a>
+                    </div>
+                )}
+                {getSocialLinks().website && (
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-globe text-gray-400"></i>
+                    <a href={getSocialLinks().website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      Website
+                    </a>
+                </div>
+              )}
+              </div>
+            </section>
+          </div>
+        )}
 
         {/* Description */}
         <section className="bg-gray-50 p-4 rounded-lg">
@@ -697,9 +698,6 @@ const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
             </section>
           </div>
         )}
-
-        {/* Add AI Enrichment section */}
-        {renderAIEnrichment()}
       </div>
 
       {/* Company Details Popup */}

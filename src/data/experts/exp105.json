@@ -1,41 +1,55 @@
 {
   "id": "exp105",
   "personalInfo": {
-    "fullName": "PD Dr. Thomas Fischer",
-    "title": "Senior AI Researcher",
-    "email": "thomas.fischer@karlsruher-institut-fuer-technologie.de",
-    "phone": "+49 594 13642243",
-    "image": "/experts/thomas-fischer.jpg",
+    "title": null,
+    "firstName": "Alexander",
+    "lastName": "Vaselek",
+    "fullName": "Alexander Vaselek",
+    "image": "/experts/alexander-vaselek.jpg",
+    "email": null,
+    "phone": null,
     "languages": [
+      "Deutsch",
       "Englisch"
     ]
   },
   "institution": {
-    "name": "Karlsruher Institut für Technologie",
-    "department": "AI Research Center",
-    "position": "Researcher",
-    "location": "Karlsruhe"
+    "name": "CIMEDO",
+    "position": "CEO",
+    "department": null,
+    "website": "ogcon.de"
   },
   "expertise": {
     "primary": [
-      "Natural Language Processing",
-      "Machine Learning",
-      "Deep Learning"
+      "KI Ecosystem"
     ],
-    "secondary": [
-      "Big Data Analytics",
-      "Edge Computing"
-    ],
+    "secondary": [],
     "industries": [
-      "Finance",
-      "Automotive",
-      "Manufacturing"
+      "AI"
     ]
   },
+  "academicMetrics": {
+    "publications": {
+      "total": null,
+      "sources": {
+        "googleScholar": null,
+        "scopus": null
+      }
+    }
+  },
   "currentRole": {
-    "title": "Senior AI Researcher",
-    "organization": "Karlsruher Institut für Technologie",
-    "focus": "Forschung in Machine Learning",
-    "status": "active"
-  }
+    "title": "CEO",
+    "organization": "CIMEDO",
+    "focus": "KI Ecosystem"
+  },
+  "profiles": {
+    "linkedin": null,
+    "company": "ogcon.de"
+  },
+  "tags": [
+    "KI Ecosystem",
+    "CEO"
+  ],
+  "source": "ogcon.de",
+  "last_updated": "2025-02-05T00:43:58.326Z"
 }

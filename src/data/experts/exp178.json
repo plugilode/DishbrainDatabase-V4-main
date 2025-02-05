@@ -1,42 +1,57 @@
 {
   "id": "exp178",
   "personalInfo": {
-    "fullName": "Prof. Michael Hoffmann",
-    "title": "Professor für KI und ML",
-    "email": "michael.hoffmann@fraunhofer-iais.de",
-    "phone": "+49 697 16578116",
-    "image": "/experts/michael-hoffmann.jpg",
+    "title": null,
+    "firstName": "Alessandro",
+    "lastName": "Alviani",
+    "fullName": "Alessandro Alviani",
+    "image": "https://kress.oberauer-cloud.com/news_list_home/uploads/news/AlvianiAlessandro_c_privat.jpg",
+    "email": null,
+    "phone": null,
     "languages": [
-      "Mandarin",
-      "Deutsch"
+      "Deutsch",
+      "Englisch"
     ]
   },
   "institution": {
-    "name": "Fraunhofer IAIS",
-    "department": "Institut für Intelligente Systeme",
-    "position": "Professor",
-    "location": "Sankt Augustin"
+    "name": "Süddeutsche Zeitung",
+    "position": "Lead Generative AI",
+    "department": null,
+    "website": null
   },
   "expertise": {
     "primary": [
-      "Machine Learning",
-      "Explainable AI",
-      "Deep Learning"
+      "Medien"
     ],
-    "secondary": [
-      "AI Security",
-      "Big Data Analytics"
-    ],
-    "industries": [
-      "Finance",
-      "Energy",
-      "Research"
-    ]
+    "secondary": [],
+    "industries": []
+  },
+  "academicMetrics": {
+    "publications": {
+      "total": null,
+      "sources": {
+        "googleScholar": null,
+        "scopus": null
+      }
+    }
   },
   "currentRole": {
-    "title": "Professor für Künstliche Intelligenz",
-    "organization": "Fraunhofer IAIS",
-    "focus": "Forschung in Deep Learning",
-    "status": "active"
-  }
+    "title": "Lead Generative AI",
+    "organization": "Süddeutsche Zeitung",
+    "focus": "Medien"
+  },
+  "profiles": {
+    "linkedin": "https://www.linkedin.com/in/alessandro-alviani/",
+    "company": null
+  },
+  "tags": [
+    "Medien",
+    "Lead Generative AI"
+  ],
+  "source": "Medieninsider.com",
+  "experience": [],
+  "education": [],
+  "skills": [],
+  "lastEnriched": "2025-01-17T09:21:19.105Z",
+  "last_updated": "2025-02-05T02:47:32.622Z"
 }

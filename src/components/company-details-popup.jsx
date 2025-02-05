@@ -115,11 +115,13 @@ const renderAIEnrichment = (company) => {
   );
 };
 
-const CompanyDetailsPopup = ({ company, onClose, onUpdate }) => {
+const CompanyDetailsPopup = ({ company, onClose, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedCompany, setEditedCompany] = useState(company);
   const [isEnriching, setIsEnriching] = useState(false);
   const [showResearchPopup, setShowResearchPopup] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Handle escape key press
   useEffect(() => {
@@ -270,6 +272,30 @@ const CompanyDetailsPopup = ({ company, onClose, onUpdate }) => {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      
+      const response = await fetch(`/api/companies?domain=${company.domain}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete company');
+      }
+
+      toast.success('Firma erfolgreich gelöscht');
+      onClose();
+      onDelete(company); // Update parent state
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error(`Löschen fehlgeschlagen: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
@@ -313,6 +339,13 @@ const CompanyDetailsPopup = ({ company, onClose, onUpdate }) => {
                 </button>
               </>
             )}
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+            >
+              {isDeleting ? 'Wird gelöscht...' : 'Firma löschen'}
+            </button>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
@@ -527,6 +560,34 @@ const CompanyDetailsPopup = ({ company, onClose, onUpdate }) => {
             }}
             onSave={handleResearchResults}
           />
+        )}
+
+        {/* Delete confirmation modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Firma löschen</h3>
+              <p className="mb-6">
+                Sind Sie sicher, dass Sie die Firma "{company.legal_name}" löschen möchten? 
+                Diese Aktion kann nicht rückgängig gemacht werden.
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isDeleting ? 'Wird gelöscht...' : 'Endgültig löschen'}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

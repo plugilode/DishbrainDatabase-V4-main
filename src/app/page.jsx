@@ -13,6 +13,8 @@ import CompanyDetailsPopup from '../components/company-details-popup';
 import ExpertFormPopup from '../components/expert-form-popup';
 import CompanyFormPopup from '../components/company-form-popup';
 import { toast } from 'react-hot-toast';
+import ExportButton from '@/components/export-button';
+import ExpertCard from '../components/expert-card';
 
 const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23CBD5E0' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
 
@@ -717,160 +719,11 @@ const Page = () => {
                     {filteredExperts
                       .slice((currentPage - 1) * expertsPerPage, currentPage * expertsPerPage)
                       .map((expert) => (
-                        <div
-                          key={expert.id}
-                          className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                        <ExpertCard
+                          key={expert.id || expert.name}
+                          expert={expert}
                           onClick={() => setSelectedExpert(expert)}
-                        >
-                          <div className="flex items-center gap-4 mb-4">
-                            <img
-                              src={expert.id === "exp_buyx" 
-                                ? expert.personalInfo?.imageUrl 
-                                : (expert.personalInfo?.imageUrl || expert.imageUrl || DEFAULT_AVATAR)}
-                              alt={expert.personalInfo?.fullName || expert.name}
-                              className="h-16 w-16 object-cover rounded-full border-2 border-gray-200"
-                              onError={(e) => {
-                                e.target.src = DEFAULT_AVATAR;
-                                e.target.onerror = null;
-                              }}
-                            />
-                            <div>
-                              <h3 className="text-lg font-semibold">
-                                {expert.personalInfo?.fullName || expert.name}
-                              </h3>
-                              <p className="text-gray-600">{expert.position}</p>
-                            </div>
-                          </div>
-
-                          {/* Information Grid */}
-                          <div className="space-y-4">
-                            {/* Institution & Department */}
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <i className="fas fa-building text-gray-400 w-5"></i>
-                                <span className="text-gray-700">
-                                  {typeof expert.institution === 'string' 
-                                    ? expert.institution 
-                                    : expert.institution?.name || 'Institution nicht angegeben'}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <i className="fas fa-sitemap text-gray-400 w-5"></i>
-                                <span className="text-gray-700">
-                                  {typeof expert.department === 'string'
-                                    ? expert.department
-                                    : expert.department?.name || 'Abteilung nicht angegeben'}
-                                </span>
-                              </div>
-                              {expert.position && (
-                                <div className="flex items-center gap-2">
-                                  <i className="fas fa-user-tie text-gray-400 w-5"></i>
-                                  <span className="text-gray-700">
-                                    {typeof expert.position === 'string'
-                                      ? expert.position
-                                      : expert.position?.title || 'Position nicht angegeben'}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Contact Information */}
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <i className="fas fa-envelope text-gray-400 w-5"></i>
-                                <span className="text-gray-700">{expert.email || 'Email nicht angegeben'}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <i className="fas fa-phone text-gray-400 w-5"></i>
-                                <span className="text-gray-700">{expert.phone || 'Telefon nicht angegeben'}</span>
-                              </div>
-                            </div>
-
-                            {/* Location */}
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <i className="fas fa-map-marker-alt text-gray-400 w-5"></i>
-                                <span className="text-gray-700">
-                                  {[expert.city, expert.country].filter(Boolean).join(', ') || 'Standort nicht angegeben'}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Expertise & Technologies */}
-                            <div className="space-y-2">
-                              <div className="flex flex-wrap gap-2">
-                                {expert.expertise && expert.expertise.length > 0 ? (
-                                  expert.expertise.map((item, index) => (
-                                    <span 
-                                      key={index}
-                                      className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
-                                    >
-                                      {item}
-                                    </span>
-                                  ))
-                                ) : (
-                                  <span className="text-gray-500 text-sm">Keine Expertise angegeben</span>
-                                )}
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {expert.technologies && expert.technologies.length > 0 ? (
-                                  expert.technologies.map((tech, index) => (
-                                    <span 
-                                      key={index}
-                                      className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs"
-                                    >
-                                      {tech}
-                                    </span>
-                                  ))
-                                ) : (
-                                  <span className="text-gray-500 text-sm">Keine Technologien angegeben</span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Metrics */}
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-100">
-                                <p className="text-xs text-gray-500 mb-1">Publikationen</p>
-                                <p className="text-lg font-bold text-blue-600">
-                                  {typeof expert.publications === 'number' ? expert.publications : '0'}
-                                </p>
-                              </div>
-                              <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-100">
-                                <p className="text-xs text-gray-500 mb-1">h-index</p>
-                                <p className="text-lg font-bold text-blue-600">
-                                  {typeof expert.hIndex === 'number' ? expert.hIndex : '0'}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Links */}
-                            <div className="space-y-2">
-                              {expert.linkedin_url && (
-                                <a 
-                                  href={expert.linkedin_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline flex items-center gap-2"
-                                >
-                                  <i className="fab fa-linkedin"></i>
-                                  LinkedIn Profil
-                                </a>
-                              )}
-                              {expert.url && (
-                                <a 
-                                  href={expert.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline flex items-center gap-2"
-                                >
-                                  <i className="fas fa-globe"></i>
-                                  Website
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        </div>
+                        />
                       ))}
                   </div>
 
@@ -1363,6 +1216,10 @@ const Page = () => {
           }}
         />
       )}
+
+      <div className="flex justify-end p-4">
+        <ExportButton />
+      </div>
     </div>
   );
 };

@@ -196,3 +196,42 @@ export async function POST(request) {
     );
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const domain = searchParams.get('domain');
+
+    if (!domain) {
+      return NextResponse.json(
+        { error: 'Domain is required' },
+        { status: 400 }
+      );
+    }
+
+    const filePath = path.join(process.cwd(), 'src', 'data', 'companies', `${domain.replace(/\./g, '_')}.json`);
+
+    try {
+      await fs.unlink(filePath);
+      return NextResponse.json({ 
+        success: true,
+        message: 'Company deleted successfully' 
+      });
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return NextResponse.json(
+          { error: 'Company not found' },
+          { status: 404 }
+        );
+      }
+      throw error;
+    }
+
+  } catch (error) {
+    console.error('Delete error:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete company' },
+      { status: 500 }
+    );
+  }
+}
