@@ -285,12 +285,58 @@ const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
-        {/* Header with Edit and Close buttons */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {isEditing ? 'Experte bearbeiten' : 'Experten Details'}
-          </h2>
-          <div className="flex items-center gap-3">
+        {/* Header with image and basic info */}
+        <div className="p-6">
+          {/* Header with image and basic info */}
+          <div className="flex items-start gap-6 mb-6">
+            {/* Expert Image */}
+            <div className="w-32 h-32 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
+              {expert.personalInfo?.image ? (
+                <img
+                  src={expert.personalInfo.image}
+                  alt={getName()}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null; // Prevent infinite loop
+                    e.target.src = '/experts/default-expert-avatar.png';
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600">
+                  <span className="text-3xl font-bold">
+                    {getName().charAt(0)}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Expert Info */}
+            <div className="flex-1">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{getName()}</h2>
+                  <div className="text-gray-600 mt-1">
+                    <span className="font-medium">{getTitle()}</span>
+                    {getOrganization() && (
+                      <>
+                        <span className="mx-2">·</span>
+                        <span>{getOrganization()}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Close button */}
+                <button
+                  onClick={onClose}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <i className="fas fa-times text-xl"></i>
+                </button>
+              </div>
+
+              {/* Edit/Save buttons */}
+              <div className="flex gap-3 mt-4">
             {!isEditing ? (
               <>
                 <button
@@ -328,71 +374,10 @@ const ExpertDetailsPopup = ({ expert, onClose, onUpdate }) => {
                 </button>
               </>
             )}
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <i className="fas fa-times text-xl"></i>
-            </button>
           </div>
         </div>
-
-        {/* Keep only this image section */}
-        <div className="flex items-center gap-6 mb-8 mt-16">
-          <div className="w-32 h-32 relative">
-            <img
-              src={expert.id === "exp_buyx" 
-                ? expert.personalInfo?.imageUrl 
-                : (expert.personalInfo?.imageUrl || expert.imageUrl || DEFAULT_AVATAR)}
-              alt={expert.personalInfo?.fullName || expert.name}
-              className="w-full h-full object-cover rounded-full border-4 border-white shadow-lg"
-              onError={(e) => {
-                e.target.src = DEFAULT_AVATAR;
-                e.target.onerror = null;
-              }}
-            />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              {getName()}
-            </h2>
-            <p className="text-lg text-gray-600">{getTitle()}</p>
-            {getOrganization() && (
-              <button 
-                onClick={() => setShowCompanyDetails(true)}
-                className="flex items-center gap-2 text-gray-500 mt-1 hover:text-blue-600 transition-colors"
-              >
-                <i className="fas fa-building"></i>
-                <span className="hover:underline">{getOrganization()}</span>
-                <i className="fas fa-external-link-alt text-sm"></i>
-              </button>
-            )}
           </div>
         </div>
-
-        {/* Image URL input when editing */}
-        {isEditing && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Profilbild URL
-            </label>
-            <input
-              type="url"
-              value={editedExpert.personalInfo?.image || ''}
-              onChange={(e) => {
-                setEditedExpert({
-                  ...editedExpert,
-                  personalInfo: {
-                    ...editedExpert.personalInfo,
-                    image: e.target.value
-                  }
-                });
-              }}
-              className="w-full p-2 border rounded-lg"
-              placeholder="https://example.com/expert-image.jpg"
-            />
-          </div>
-        )}
 
         {/* Tabs */}
         <div className="flex border-b mb-6">
